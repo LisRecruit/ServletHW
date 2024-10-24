@@ -14,15 +14,15 @@
                    <%
                        String selectedTimeZone = request.getParameter("timeZone");
                        if (selectedTimeZone == null) {
-                           selectedTimeZone = "UTC"; // Установите по умолчанию на "UTC"
+                           selectedTimeZone = "UTC";
                        }
 
                        for (int i = -12; i <= 12; i++) {
                            String timeZone;
                            if (i >= 0) {
-                               timeZone = "UTC+" + i; // Для положительных значений
+                               timeZone = "UTC+" + i;
                            } else {
-                               timeZone = "UTC" + i;  // Для отрицательных значений
+                               timeZone = "UTC" + i;
                            }
                    %>
                            <option value="<%= timeZone %>" <%= (timeZone.equals(selectedTimeZone) ? "selected" : "") %>><%= timeZone %></option>
