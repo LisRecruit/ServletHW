@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 
 
 @WebServlet(value = {"/time", "/timezone", "/response"})
-public class Servlet extends HttpServlet {
+public class TimeServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String timeZone = req.getParameter("timezone");
