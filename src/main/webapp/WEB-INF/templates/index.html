@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Time</title>
+</head>
+<body>
+<div>
+    <h1>Time Zone</h1>
+    <p>
+    <h1>Current time: <span th:text="${formattedDateTime}">2022-01-05 10:05:01 UTC</span></h1></p>
+    <form action="/time" method="POST">
+        <label for="timezone">Choose your time zone:</label>
+        <select id="timezone" name="timeZone">
+            <option th:each="tz : ${timeZones}"
+                    th:value="${tz}"
+                    th:text="${tz}"
+                    th:selected="${tz == timeZone} ">
+            </option>
+        </select>
+        <button type="submit">Submit</button>
+    </form>
+</div>
+
+</body>
+</html>
