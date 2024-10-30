@@ -16,8 +16,10 @@ public class TimezoneValidateFilter extends HttpFilter {
     @Override
     public void doFilter(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException {
         String timeZone = req.getParameter("timezone");
-        System.out.println(timeZone);
+
         if (timeZone != null && !timeZone.isEmpty()) {
+            timeZone = timeZone.replace(" ", "+");
+            System.out.println(timeZone);
             try {
                 ZoneId.of(timeZone);
             } catch (DateTimeException e) {

@@ -10,6 +10,7 @@ import org.thymeleaf.templateresolver.FileTemplateResolver;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@WebServlet(value = {"/", "/time", "/timezone", "/response"})
+@WebServlet(value = { "/time", "/timezone", "/response"})
 public class TimeServlet extends HttpServlet {
     private TemplateEngine templateEngine;
 
@@ -40,14 +41,30 @@ public class TimeServlet extends HttpServlet {
         logCookies(req);
 
         HttpSession session = req.getSession(false);
-        String timeZone = null;
+        String timeZone = req.getParameter("timezone");
 
-        if (session != null) {
+        if (timeZone != null && !timeZone.isEmpty()) {
+            timeZone = timeZone.trim().replace(" ", "+");
+            try {
+                ZoneId.of(timeZone);
+                resp.addCookie(new Cookie("lastTimezone", timeZone));
+                if (session == null) {
+                    session = req.getSession(true);
+                }
+                session.setAttribute("selectedTimeZone", timeZone);
+            } catch (DateTimeException e) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("Invalid timezone");
+                return;
+            }
+        } else {
             timeZone = (String) session.getAttribute("selectedTimeZone");
+            if (timeZone == null || timeZone.isEmpty()) {
+                timeZone = getLastTimezoneFromCookies(req);
+            }
         }
-
         if (timeZone == null || timeZone.isEmpty()) {
-            timeZone = getLastTimezoneFromCookies(req);
+            timeZone = "UTC";
         }
 
         ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of(timeZone));
@@ -70,9 +87,6 @@ public class TimeServlet extends HttpServlet {
         context.setVariable("formattedDateTime", formattedDateTime);
         context.setVariable("timeZones", timeZones);
 
-        resp.setContentType("text/html;charset=UTF-8");
-        resp.setCharacterEncoding("UTF-8");
-
         try (PrintWriter writer = resp.getWriter()) {
             templateEngine.process("index", context, writer);
         } catch (Exception e) {
@@ -88,16 +102,13 @@ public class TimeServlet extends HttpServlet {
         logCookies(req);
 
         String timeZone = req.getParameter("timeZone");
-        if (timeZone != null && !timeZone.isEmpty()) {
-            HttpSession session = req.getSession();
-            session.setAttribute("selectedTimeZone", timeZone);
-            Cookie cookie = new Cookie("lastTimezone", timeZone);
-            cookie.setMaxAge(60 * 2);
-            resp.addCookie(cookie);
-        } else {
+        if (timeZone == null || timeZone.isEmpty()) {
             timeZone = getLastTimezoneFromCookies(req);
         }
+        HttpSession session = req.getSession();
+        session.setAttribute("selectedTimeZone", timeZone);
 
+        resp.addCookie(new Cookie("lastTimezone", timeZone));
         System.out.println(timeZone);
         resp.sendRedirect(req.getContextPath() + "/time");
     }
